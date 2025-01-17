@@ -42,7 +42,11 @@ export default function ScoringGrid() {
         $gtSm={{ maxWidth: 700 }}
         $gtMd={{ maxWidth: 800 }}
         $gtLg={{ maxWidth: 1000 }}
-      >
+      ><RoundScoresGridCell 
+      width="100%"
+    >
+      Game Totals By Round
+    </RoundScoresGridCell>
         {/* Column Headers */}
         <XStack width="100%" flexDirection="row">
           <RoundScoresGridCell 

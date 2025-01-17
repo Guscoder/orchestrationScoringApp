@@ -8,26 +8,27 @@ export interface PlayerRoundPoints {
 }
 
 export interface RoundDetails {
-    bandType: number
+    bandType: string
     bandBonus: number
     venue: number
     venueBonus: number
-    musiciansRow1: number
-    musiciansRow2: number
-    musiciansRow3: number
-    specialtyMusicians: number
-    principalMusicians2: number
-    principalMusicians5: number
-    conductor: number
-    podium: number
     musicSelection: number
     musicBonus: number
+    musiciansRowOne: number
+    musiciansRowTwo: number
+    musiciansRowThree: number
+    specialtyMusicians: number
+    principalMusicianSecondChair: number
+    principalMusicianFirstChair: number
+    conductor: number
+    podium: number
+    marketingTokens: number,
     specialGuest: number
     eventManager: number
-    decrescendoCard1: number
-    decrescendoCard2: number
-    crescendoCard1: number
-    crescendoCard2: number
+    DecrescendoCardOne: number
+    DecrescendoCardTwo: number
+    crescendoCardOne: number
+    crescendoCardTwo: number
 }
 
 export interface RoundScoring {
