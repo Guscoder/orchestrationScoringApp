@@ -3,15 +3,15 @@ import { XStack } from 'tamagui';
 import { Check } from '@tamagui/lucide-icons';
 
 interface CheckboxScoreInputProps {
-  value: number;
-  onChange: (value: string) => void;
+  value: string;
+  onChangeText: (value: string) => void;
 }
 
-export default function CheckboxScoreInput({ value, onChange }: CheckboxScoreInputProps) {
-  const isChecked = value > 0;
+export default function CheckboxScoreInput({ value, onChangeText }: CheckboxScoreInputProps) {
+  const isChecked = parseInt(value, 10) > 0;
 
   const handleToggle = () => {
-    onChange(isChecked ? '0' : '5');
+    onChangeText(isChecked ? '0' : '5');
   };
 
   return (
@@ -28,7 +28,7 @@ export default function CheckboxScoreInput({ value, onChange }: CheckboxScoreInp
         width="$2"
         height="$2"
         borderWidth={1}
-        borderColor="$black"
+        borderColor="$grey"
         borderRadius="$1"
         alignItems="center"
         justifyContent="center"
