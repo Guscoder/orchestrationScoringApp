@@ -61,7 +61,7 @@ export const MUSIC_SELECTIONS: Music[] = [
     { name: 'Sweet Caroline', size: 1, score: 16, cost: 21, bonus: '' },
     { name: 'Hey Baby', size: 1, score: 14, cost: 19, bonus: '' },
     { name: "Can't Help Falling in Love", size: 1, score: 12, cost: 17, bonus: BandType.VOCAL },
-    { name: 'Rock and Roll - Part II', size: 1, score: 10, cost: 15, bonus: BandType.MARCHING },
+    { name: 'Rock and Roll Part 2', size: 1, score: 10, cost: 15, bonus: BandType.MARCHING },
     { name: 'Green Onions', size: 1, score: 9, cost: 14, bonus: BandType.JAZZ },
     { name: 'Fly Me to the Moon', size: 1, score: 8, cost: 13, bonus: BandType.BIG_BAND },
     { name: 'I Love Rock and Roll', size: 1, score: 7, cost: 12, bonus: BandType.ROCK },

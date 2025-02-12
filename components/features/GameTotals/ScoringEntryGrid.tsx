@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useRef, useState } from "react";
 import {
   YStack,
   XStack,
@@ -8,6 +8,8 @@ import {
   Form,
   Text,
   View,
+  Sheet,
+  ScrollView,
 } from "tamagui";
 import { usePlayerStore } from "store/usePlayerStore";
 import { RoundScoresGridCell } from "components/features/GameTotals/RoundScoresGridCell";
@@ -21,6 +23,22 @@ import {
 } from "constants/ScoringVariables";
 import CheckboxScoreInput from "./CheckboxScoreInput";
 
+const SubmitButtonSection = () => {
+  return (
+    <XStack width="100%">
+      <RoundScoresGridCell width="100%" borderTopWidth={0}>
+        <XStack width="100%" justifyContent="center">
+          <Form.Trigger asChild>
+            <Button backgroundColor="$blue8" color="white" size="$3">
+              Submit Scores
+            </Button>
+          </Form.Trigger>
+        </XStack>
+      </RoundScoresGridCell>
+    </XStack>
+  );
+};
+
 interface SelectWrapperProps {
   children: React.ReactNode;
   value: string;
@@ -28,23 +46,28 @@ interface SelectWrapperProps {
   placeholder: string;
 }
 
-export const SelectWrapper = ({
+const SelectWrapper = ({
   children,
   value,
   onValueChange,
   placeholder,
-  ...props
 }: SelectWrapperProps) => {
+  const [position, setPosition] = useState(0);
+  const [open, setOpen] = useState(false);
+
+  const handleValueChange = (newValue: string) => {
+    requestAnimationFrame(() => {
+      onValueChange(newValue);
+      setOpen(false);
+    });
+  };
+
   return (
     <Select
       value={value}
-      onValueChange={(value) => {
-        // Prevent default scroll behavior
-        requestAnimationFrame(() => {
-          onValueChange(value);
-        });
-      }}
-      {...props}
+      onValueChange={handleValueChange}
+      open={open}
+      onOpenChange={setOpen}
     >
       <Select.Trigger width="100%" backgroundColor="transparent">
         <Select.Value
@@ -52,33 +75,50 @@ export const SelectWrapper = ({
           fontSize="$2"
           width="100%"
           flex={1}
+          textAlign="center"
         />
       </Select.Trigger>
+
       <Select.Adapt when="sm">
-        <Select.Sheet modal dismissOnSnapToBottom>
-          <Select.Sheet.Frame>
-            <Select.Sheet.ScrollView>
-              <Select.Viewport>{children}</Select.Viewport>
-            </Select.Sheet.ScrollView>
-          </Select.Sheet.Frame>
-          <Select.Sheet.Overlay />
-        </Select.Sheet>
-      </Select.Adapt>
-      <Select.Content>
-        <Select.ScrollUpButton />
-        <Select.Viewport
-          enterStyle={{ opacity: 0, scale: 0.95, y: -10 }}
-          exitStyle={{ opacity: 0, scale: 0.95, y: 10 }}
-          animation={[
-            "quick",
-            {
-              opacity: {
-                overshootClamping: true,
-              },
-            },
-          ]}
+        <Sheet
+          modal
+          open={open}
+          onOpenChange={setOpen}
+          snapPoints={[80]}
+          position={position}
+          onPositionChange={setPosition}
+          dismissOnSnapToBottom
         >
-          {children}
+          <Sheet.Overlay />
+          <Sheet.Frame>
+            <Sheet.Handle />
+            <XStack width="100%" paddingHorizontal="$4">
+              <YStack
+                width="100%"
+                backgroundColor="$background"
+                borderRadius="$4"
+                marginTop="$4"
+                maxHeight="80vh"
+                overflow="hidden"
+              >
+                <Sheet.ScrollView
+                  showsVerticalScrollIndicator={true}
+                  showsHorizontalScrollIndicator={false}
+                  padding="$2"
+                  bounces={false}
+                >
+                  <YStack space="$1">{children}</YStack>
+                </Sheet.ScrollView>
+              </YStack>
+            </XStack>
+          </Sheet.Frame>
+        </Sheet>
+      </Select.Adapt>
+
+      <Select.Content zIndex={200000}>
+        <Select.ScrollUpButton />
+        <Select.Viewport>
+          <YStack space="$1">{children}</YStack>
         </Select.Viewport>
         <Select.ScrollDownButton />
       </Select.Content>
@@ -101,12 +141,47 @@ interface FormData {
   bandBonus: string;
 }
 
+interface AudioTracks {
+  [key: string]: HTMLAudioElement | null;
+}
+
 export default function ScoringEntryForm() {
   const players = usePlayerStore((state) => state.players);
   const updateRoundScoring = usePlayerStore(
     (state) => state.updateRoundScoring
   );
   const updatePlayerScore = usePlayerStore((state) => state.updatePlayerScore);
+
+  const audioRefs = useRef<AudioTracks>({
+    greenonions: null,
+    jupiter: null,
+    rockandrollpart2: null,
+    fanfareforcommonman: null,
+  });
+
+  React.useEffect(() => {
+    // Initialize audio elements
+    audioRefs.current.rockandrollpart2 = new Audio(
+      "../../assets/music/rockandrollpart2.mp3"
+    );
+    audioRefs.current.fanfareforcommonman = new Audio(
+      "../../assets/music/fanfareforcommonman.mp3"
+    );
+    audioRefs.current.greenonions = new Audio(
+      "../../assets/music/greenonions.mp3"
+    );
+    audioRefs.current.jupiter = new Audio("../../assets/music/jupiter.mp3");
+
+    return () => {
+      // Cleanup
+      Object.values(audioRefs.current).forEach((audio) => {
+        if (audio) {
+          audio.pause();
+          audio.currentTime = 0;
+        }
+      });
+    };
+  }, []);
 
   const initialFormData: FormData = {
     playerId: players[0]?.id || "",
@@ -160,6 +235,28 @@ export default function ScoringEntryForm() {
 
   const handleMusicChange = (value: string) => {
     const music = MUSIC_SELECTIONS.find((m) => m.name === value);
+    // Stop any currently playing track
+    Object.values(audioRefs.current).forEach((audio) => {
+      if (audio && !audio.paused) {
+        audio.pause();
+        audio.currentTime = 0;
+      }
+    });
+
+    // Play the new selection if it's either Green Onions or Jupiter
+    if (
+      value === "Green Onions" ||
+      value === "Jupiter" ||
+      value === "Rock and Roll Part 2" ||
+      value === "Fanfare for Common Man"
+    ) {
+      const audio = audioRefs.current[value.toLowerCase().replace(/ /g, "")];
+      console.log(value, value.toLowerCase().replace(/ /g, ""));
+      if (audio) {
+        audio.currentTime = 0; // Reset to start
+        audio.play();
+      }
+    }
 
     setFormData((prev) => ({
       ...prev,
@@ -213,34 +310,41 @@ export default function ScoringEntryForm() {
     setFormData(initialFormData);
   };
 
-  const renderSelect = (
-    placeholder: string,
-    value: string,
-    onChange: (value: string) => void,
-    options: { label: string; value: string }[]
-  ) => (
-    <Select value={value} onValueChange={onChange}>
-      <Select.Trigger width="100%" backgroundColor="transparent">
-        <Select.Value
-          placeholder={placeholder}
-          fontSize="$2"
-          width="100%"
-          flex={1}
-        />
-      </Select.Trigger>
-      <Select.Content>
-        <Select.ScrollUpButton />
-        <Select.Viewport>
-          {options.map((option) => (
-            <Select.Item key={option.value} value={option.value}>
-              <Select.ItemText>{option.label}</Select.ItemText>
-            </Select.Item>
-          ))}
-        </Select.Viewport>
-        <Select.ScrollDownButton />
-      </Select.Content>
-    </Select>
-  );
+  // const renderSelect = (
+  //   placeholder: string,
+  //   value: string,
+  //   onChange: (value: string) => void,
+  //   options: { label: string; value: string }[]
+  // ) => (
+  //   <Select value={value} onValueChange={onChange}>
+  //     <Select.Trigger width="100%" backgroundColor="transparent">
+  //       <Select.Value
+  //         placeholder={placeholder}
+  //         fontSize="$2"
+  //         width="100%"
+  //         flex={1}
+  //       />
+  //     </Select.Trigger>
+  //     <Select.Content>
+  //       <Select.ScrollUpButton />
+  //       <Select.Viewport>
+  //         {options.map((option) => (
+  //           <Select.Item
+  //             key={option.value}
+  //             value={option.value}
+  //             onPress={(e) => {
+  //               e.stopPropagation();
+  //               // props.onPress?.(e);
+  //             }}
+  //           >
+  //             <Select.ItemText>{option.label}</Select.ItemText>
+  //           </Select.Item>
+  //         ))}
+  //       </Select.Viewport>
+  //       <Select.ScrollDownButton />
+  //     </Select.Content>
+  //   </Select>
+  // );
 
   const renderInputField = (category: string) => {
     const commonInputProps = {
@@ -268,6 +372,7 @@ export default function ScoringEntryForm() {
           disabled={true}
           backgroundColor="$backgroundHover"
           opacity={1}
+          placeholder="0"
         />
       );
     }
@@ -275,47 +380,6 @@ export default function ScoringEntryForm() {
     // Handle special selects
     if (category === "venue") {
       return (
-        // <Select value={formData.venue} onValueChange={handleVenueChange}>
-        //   <Select.Trigger width="100%" backgroundColor="transparent">
-        //     <Select.Value
-        //       placeholder="Select Venue"
-        //       fontSize="$2"
-        //       width="100%"
-        //       flex={1}
-        //     />
-        //   </Select.Trigger>
-        //   <View position="relative">
-        //     <Select.Content>
-        //       <View
-        //         maxWidth="90vw"
-        //         position="absolute"
-        //         top="100%"
-        //         left="0"
-        //         right="0"
-        //         zIndex={1000}
-        //       >
-        //         <Select.ScrollUpButton />
-        //         <Select.Viewport>
-        //           {[1, 2, 3].map((size) => (
-        //             <Select.Group key={size}>
-        //               <Select.Label>Size {size} Venues</Select.Label>
-        //               {VENUES.filter((v) => v.size === size).map((venue) => (
-        //                 <Select.Item
-        //                   key={venue.name}
-        //                   value={venue.name}
-        //                   index={VENUES.findIndex((v) => v.name === venue.name)}
-        //                 >
-        //                   <Select.ItemText>{`${venue.name} (${venue.score} pts)`}</Select.ItemText>
-        //                 </Select.Item>
-        //               ))}
-        //             </Select.Group>
-        //           ))}
-        //         </Select.Viewport>
-        //         <Select.ScrollDownButton />
-        //       </View>
-        //     </Select.Content>
-        //   </View>
-        // </Select>
         <SelectWrapper
           value={formData.venue}
           onValueChange={handleVenueChange}
@@ -323,14 +387,28 @@ export default function ScoringEntryForm() {
         >
           {[1, 2, 3].map((size) => (
             <Select.Group key={size}>
-              <Select.Label>Size {size} Venues</Select.Label>
+              <YStack width="100%" alignItems="center" paddingVertical="$2">
+                <Select.Label
+                  fontWeight="bold"
+                  fontSize="$6"
+                  textAlign="center"
+                  backgroundColor={"yellow"}
+                >
+                  {`Size ${size} Venues`}
+                </Select.Label>
+              </YStack>
               {VENUES.filter((v) => v.size === size).map((venue) => (
                 <Select.Item
                   key={venue.name}
                   value={venue.name}
                   index={VENUES.findIndex((v) => v.name === venue.name)}
+                  onPress={(e) => {
+                    e.stopPropagation();
+                  }}
                 >
-                  <Select.ItemText>{`${venue.name} (${venue.score} pts)`}</Select.ItemText>
+                  <Select.ItemText textAlign="center" width="100%">
+                    {`${venue.name} (${venue.score} pts)`}
+                  </Select.ItemText>
                 </Select.Item>
               ))}
             </Select.Group>
@@ -340,87 +418,43 @@ export default function ScoringEntryForm() {
     }
     if (category === "bandBonus") {
       return (
-        // <Select
-        //   value={formData.bandBonus}
-        //   onValueChange={(value) => handleInputChange("bandBonus", value)}
-        // >
-        //   <Select.Trigger width="100%" backgroundColor="transparent">
-        //     <Select.Value
-        //       placeholder="Band Bonus"
-        //       fontSize="$2"
-        //       width="100%"
-        //       flex={1}
-        //     />
-        //   </Select.Trigger>
-        //   <Select.Content>
-        //     <Select.ScrollUpButton />
-        //     <Select.Viewport>
-        //       {BAND_BONUS_VALUES.map((bonus, index) => (
-        //         <Select.Item
-        //           key={bonus.value}
-        //           value={bonus.value}
-        //           index={index}
-        //         >
-        //           <Select.ItemText>{bonus.label}</Select.ItemText>
-        //         </Select.Item>
-        //       ))}
-        //     </Select.Viewport>
-        //     <Select.ScrollDownButton />
-        //   </Select.Content>
-        // </Select>
         <SelectWrapper
           value={formData.bandBonus}
           onValueChange={(value) => handleInputChange("bandBonus", value)}
           placeholder="Band Bonus"
         >
-          {BAND_BONUS_VALUES.map((bonus, index) => (
-            <Select.Item key={bonus.value} value={bonus.value} index={index}>
-              <Select.ItemText>{bonus.label}</Select.ItemText>
-            </Select.Item>
-          ))}
+          <Select.Group>
+            <YStack width="100%" alignItems="center" paddingVertical="$2">
+              <Select.Label
+                fontWeight="bold"
+                fontSize="$6"
+                textAlign="center"
+                backgroundColor={"yellow"}
+              >
+                Band Bonuses
+              </Select.Label>
+            </YStack>
+            {BAND_BONUS_VALUES.map((bonus, index) => (
+              <Select.Item
+                key={bonus.value}
+                value={bonus.value}
+                index={index}
+                onPress={(e) => {
+                  e.stopPropagation();
+                }}
+              >
+                <Select.ItemText textAlign="center" width="100%">
+                  {bonus.label}
+                </Select.ItemText>
+              </Select.Item>
+            ))}
+          </Select.Group>
         </SelectWrapper>
       );
     }
 
     if (category === "musicSelection") {
       return (
-        // <Select
-        //   value={formData.musicSelection}
-        //   onValueChange={handleMusicChange}
-        // >
-        //   <Select.Trigger width="100%" backgroundColor="transparent">
-        //     <Select.Value
-        //       placeholder="Select Music"
-        //       fontSize="$2"
-        //       width="100%"
-        //       flex={1}
-        //     />
-        //   </Select.Trigger>
-        //   <Select.Content>
-        //     <Select.ScrollUpButton />
-        //     <Select.Viewport>
-        //       {[1, 2, 3].map((size) => (
-        //         <Select.Group key={size}>
-        //           <Select.Label>Size {size} Venues</Select.Label>
-        //           {MUSIC_SELECTIONS.filter((m) => m.size === size).map(
-        //             (music) => (
-        //               <Select.Item
-        //                 key={music.name}
-        //                 value={music.name}
-        //                 index={MUSIC_SELECTIONS.findIndex(
-        //                   (m) => m.name === music.name
-        //                 )}
-        //               >
-        //                 <Select.ItemText>{`${music.name} (${music.score} pts)`}</Select.ItemText>
-        //               </Select.Item>
-        //             )
-        //           )}
-        //         </Select.Group>
-        //       ))}
-        //     </Select.Viewport>
-        //     <Select.ScrollDownButton />
-        //   </Select.Content>
-        // </Select>
         <SelectWrapper
           value={formData.musicSelection}
           onValueChange={handleMusicChange}
@@ -428,7 +462,16 @@ export default function ScoringEntryForm() {
         >
           {[1, 2, 3].map((size) => (
             <Select.Group key={size}>
-              <Select.Label>Size {size} Music</Select.Label>
+              <YStack width="100%" alignItems="center">
+                <Select.Label
+                  fontWeight="bold"
+                  fontSize="$6"
+                  textAlign="center"
+                  backgroundColor="yellow"
+                >
+                  {`Size ${size} Music`}
+                </Select.Label>
+              </YStack>
               {MUSIC_SELECTIONS.filter((m) => m.size === size).map((music) => (
                 <Select.Item
                   key={music.name}
@@ -436,8 +479,13 @@ export default function ScoringEntryForm() {
                   index={MUSIC_SELECTIONS.findIndex(
                     (m) => m.name === music.name
                   )}
+                  onPress={(e) => {
+                    e.stopPropagation();
+                  }}
                 >
-                  <Select.ItemText>{`${music.name} (${music.score} pts)`}</Select.ItemText>
+                  <Select.ItemText textAlign="center" width="100%">
+                    {`${music.name} (${music.score} pts)`}
+                  </Select.ItemText>
                 </Select.Item>
               ))}
             </Select.Group>
@@ -470,38 +518,26 @@ export default function ScoringEntryForm() {
           : 1;
 
       return (
-        <XStack key={category} width="100%" alignItems="center">
-          <Input {...commonInputProps} placeholder="0" />
+        <XStack
+          key={category}
+          width="100%"
+          alignItems="center"
+          justifyContent="center"
+          position="relative"
+        >
+          <Input {...commonInputProps} placeholder="0" maxWidth="50%" />
           {multiplier > 0 && (
             <Text
               position="absolute"
-              right="$2"
+              left="58%"
               fontSize="$2"
               color="$blue10"
               fontWeight="bold"
-              textAlign="left"
-              width="auto"
             >
               ×{multiplier}
             </Text>
           )}
         </XStack>
-        //   <XStack key={category} width="100%" alignItems="center">
-        //   <Input {...commonInputProps} placeholder="0" />
-        //   {multiplier > 0 && (
-        //   <Text
-        //     position="absolute"
-        //     right="$2"
-        //     fontSize="$2"
-        //     color="$blue10"
-        //     fontWeight="bold"
-        //     textAlign="right"
-        //     width="auto"
-        //   >
-        //     ×{multiplier}
-        //   </Text>
-        //   )}
-        // </XStack>
       );
     }
 
@@ -533,80 +569,45 @@ export default function ScoringEntryForm() {
             {/* Header Row with Round and Player Selection */}
             <XStack width="100%" position="relative">
               <RoundScoresGridCell width="30%">
-                {/* <Select
-                  value={formData.round.toString()}
-                  onValueChange={(value) => handleInputChange("round", value)}
-                >
-                  <Select.Trigger
-                    width="100%"
-                    flex={1}
-                    backgroundColor="transparent"
-                  >
-                    <Select.Value
-                      placeholder="Select Round"
-                      width="100%"
-                      textAlign="center"
-                      flex={1}
-                    />
-                  </Select.Trigger>
-                  <Select.Content>
-                    <Select.ScrollUpButton />
-                    <Select.Viewport>
-                      {[1, 2, 3, 4, 5].map((round) => (
-                        <Select.Item key={round} value={round.toString()}>
-                          <Select.ItemText>Round {round}</Select.ItemText>
-                        </Select.Item>
-                      ))}
-                    </Select.Viewport>
-                    <Select.ScrollDownButton />
-                  </Select.Content>
-                </Select> */}
                 <SelectWrapper
                   value={formData.round.toString()}
                   onValueChange={(value) => handleInputChange("round", value)}
                   placeholder="Select Round"
                 >
-                  {[1, 2, 3, 4, 5].map((round) => (
-                    <Select.Item key={round} value={round.toString()}>
-                      <Select.ItemText>Round {round}</Select.ItemText>
-                    </Select.Item>
-                  ))}
+                  <Select.Group>
+                    <YStack
+                      width="100%"
+                      alignItems="center"
+                      paddingVertical="$2"
+                    >
+                      <Select.Label
+                        fontWeight="bold"
+                        fontSize="$6"
+                        textAlign="center"
+                        backgroundColor="yellow"
+                      >
+                        Game Rounds
+                      </Select.Label>
+                    </YStack>
+                    {[1, 2, 3, 4, 5].map((round) => (
+                      <Select.Item
+                        key={round}
+                        value={round.toString()}
+                        onPress={(e) => {
+                          e.stopPropagation();
+                        }}
+                      >
+                        <Select.ItemText textAlign="center" width="100%">
+                          Round {round}
+                        </Select.ItemText>
+                      </Select.Item>
+                    ))}
+                  </Select.Group>
                 </SelectWrapper>
               </RoundScoresGridCell>
 
               {/* Player Selector */}
               <RoundScoresGridCell width="70%" borderLeftWidth={0}>
-                {/* <Select
-                  value={formData.playerId}
-                  onValueChange={(value) =>
-                    handleInputChange("playerId", value)
-                  }
-                >
-                  <Select.Trigger
-                    width="100%"
-                    flex={1}
-                    backgroundColor="transparent"
-                  >
-                    <Select.Value
-                      placeholder="Select Player"
-                      fontSize="$2"
-                      textAlign="center"
-                      width="100%"
-                      flex={1}
-                    />
-                  </Select.Trigger>
-                  <Select.Content zIndex={1000}>
-                    <Select.ScrollUpButton />
-                    <Select.Viewport backgroundColor="$background">
-                      {players.map((player) => (
-                        <Select.Item key={player.id} value={player.id}>
-                          <Select.ItemText>{player.name}</Select.ItemText>
-                        </Select.Item>
-                      ))}
-                    </Select.Viewport>
-                    <Select.ScrollDownButton />
-                  </Select.Content>
-                </Select> */}
                 <SelectWrapper
                   value={formData.playerId}
                   onValueChange={(value) =>
@@ -614,11 +615,35 @@ export default function ScoringEntryForm() {
                   }
                   placeholder="Select Player"
                 >
-                  {players.map((player) => (
-                    <Select.Item key={player.id} value={player.id}>
-                      <Select.ItemText>{player.name}</Select.ItemText>
-                    </Select.Item>
-                  ))}
+                  <Select.Group>
+                    <YStack
+                      width="100%"
+                      alignItems="center"
+                      paddingVertical="$2"
+                    >
+                      <Select.Label
+                        fontWeight="bold"
+                        fontSize="$6"
+                        textAlign="center"
+                        backgroundColor="yellow"
+                      >
+                        Players
+                      </Select.Label>
+                    </YStack>
+                    {players.map((player) => (
+                      <Select.Item
+                        key={player.id}
+                        value={player.id}
+                        onPress={(e) => {
+                          e.stopPropagation();
+                        }}
+                      >
+                        <Select.ItemText textAlign="center" width="100%">
+                          {player.name}
+                        </Select.ItemText>
+                      </Select.Item>
+                    ))}
+                  </Select.Group>
                 </SelectWrapper>
               </RoundScoresGridCell>
             </XStack>
@@ -633,32 +658,43 @@ export default function ScoringEntryForm() {
                 borderLeftWidth={0}
                 borderTopWidth={0}
               >
-                <Select
+                <SelectWrapper
                   value={formData.bandType}
                   onValueChange={(value) =>
                     handleInputChange("bandType", value)
                   }
+                  placeholder="Select Band Type"
                 >
-                  <Select.Trigger width="100%" backgroundColor="transparent">
-                    <Select.Value
-                      placeholder="Select Band Type"
-                      fontSize="$2"
+                  <Select.Group>
+                    <YStack
                       width="100%"
-                      flex={1}
-                    />
-                  </Select.Trigger>
-                  <Select.Content>
-                    <Select.ScrollUpButton />
-                    <Select.Viewport>
-                      {Object.values(BandType).map((type) => (
-                        <Select.Item key={type} value={type}>
-                          <Select.ItemText>{type}</Select.ItemText>
-                        </Select.Item>
-                      ))}
-                    </Select.Viewport>
-                    <Select.ScrollDownButton />
-                  </Select.Content>
-                </Select>
+                      alignItems="center"
+                      paddingVertical="$2"
+                    >
+                      <Select.Label
+                        fontWeight="bold"
+                        fontSize="$6"
+                        textAlign="center"
+                        backgroundColor="yellow"
+                      >
+                        Band Type
+                      </Select.Label>
+                    </YStack>
+                    {Object.values(BandType).map((type) => (
+                      <Select.Item
+                        key={type}
+                        value={type}
+                        onPress={(e) => {
+                          e.stopPropagation();
+                        }}
+                      >
+                        <Select.ItemText textAlign="center" width="100%">
+                          {type}
+                        </Select.ItemText>
+                      </Select.Item>
+                    ))}
+                  </Select.Group>
+                </SelectWrapper>
               </RoundScoresGridCell>
             </XStack>
 
@@ -679,15 +715,7 @@ export default function ScoringEntryForm() {
             ))}
 
             {/* Submit Button */}
-            <XStack width="100%">
-              <RoundScoresGridCell width="100%" borderTopWidth={0}>
-                <Form.Trigger asChild>
-                  <Button backgroundColor="$blue8" color="white" size="$3">
-                    Submit Scores
-                  </Button>
-                </Form.Trigger>
-              </RoundScoresGridCell>
-            </XStack>
+            <SubmitButtonSection />
           </YStack>
         </YStack>
       </YStack>
