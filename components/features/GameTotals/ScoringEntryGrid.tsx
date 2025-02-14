@@ -203,7 +203,7 @@ export default function ScoringEntryForm() {
       field === "playerId" ||
       field === "round" ||
       field === "bandType" ||
-      field === "venue" ||
+      // field === "venue" ||
       field === "musicSelection"
     ) {
       setFormData((prev) => ({ ...prev, [field]: value }));
@@ -217,6 +217,23 @@ export default function ScoringEntryForm() {
         },
       }));
     }
+  };
+
+  const handleBandTypeChange = (value: BandType) => {
+    const venue = VENUES.find((v) => formData.venue === v.name);
+    const music = MUSIC_SELECTIONS.find(
+      (m) => formData.musicSelection === m.name
+    );
+
+    setFormData((prev) => ({
+      ...prev,
+      bandType: value,
+      scores: {
+        ...prev.scores,
+        venueBonus: value === venue?.bonus ? "5" : "0",
+        musicBonus: value === music?.bonus ? "5" : "0",
+      },
+    }));
   };
 
   const handleVenueChange = (value: string) => {
@@ -309,42 +326,6 @@ export default function ScoringEntryForm() {
     // Reset form
     setFormData(initialFormData);
   };
-
-  // const renderSelect = (
-  //   placeholder: string,
-  //   value: string,
-  //   onChange: (value: string) => void,
-  //   options: { label: string; value: string }[]
-  // ) => (
-  //   <Select value={value} onValueChange={onChange}>
-  //     <Select.Trigger width="100%" backgroundColor="transparent">
-  //       <Select.Value
-  //         placeholder={placeholder}
-  //         fontSize="$2"
-  //         width="100%"
-  //         flex={1}
-  //       />
-  //     </Select.Trigger>
-  //     <Select.Content>
-  //       <Select.ScrollUpButton />
-  //       <Select.Viewport>
-  //         {options.map((option) => (
-  //           <Select.Item
-  //             key={option.value}
-  //             value={option.value}
-  //             onPress={(e) => {
-  //               e.stopPropagation();
-  //               // props.onPress?.(e);
-  //             }}
-  //           >
-  //             <Select.ItemText>{option.label}</Select.ItemText>
-  //           </Select.Item>
-  //         ))}
-  //       </Select.Viewport>
-  //       <Select.ScrollDownButton />
-  //     </Select.Content>
-  //   </Select>
-  // );
 
   const renderInputField = (category: string) => {
     const commonInputProps = {
@@ -555,15 +536,13 @@ export default function ScoringEntryForm() {
         width="100%"
         alignItems="center"
         backgroundColor="$background"
-        marginTop="$4"
-        padding="$4"
+        minWidth={"96vw"}
       >
         <YStack
           width="100%"
-          maxWidth={1000}
-          minWidth={"100vw"}
+          maxWidth={865}
+          // minWidth={"100vw"}
           gap="$4"
-          padding={"$2"}
         >
           <YStack backgroundColor="$background" borderRadius="$2">
             {/* Header Row with Round and Player Selection */}
@@ -674,7 +653,7 @@ export default function ScoringEntryForm() {
                 <SelectWrapper
                   value={formData.bandType}
                   onValueChange={(value) =>
-                    handleInputChange("bandType", value)
+                    handleBandTypeChange(value as BandType)
                   }
                   placeholder="Select Band Type"
                 >
