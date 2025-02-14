@@ -29,7 +29,7 @@ const SubmitButtonSection = () => {
       <RoundScoresGridCell width="100%" borderTopWidth={0}>
         <XStack width="100%" justifyContent="center">
           <Form.Trigger asChild>
-            <Button backgroundColor="$blue8" color="white" size="$3">
+            <Button backgroundColor="#66C4FF" color="white" size="$3">
               Submit Scores
             </Button>
           </Form.Trigger>
@@ -370,7 +370,7 @@ export default function ScoringEntryForm() {
         <Input
           {...commonInputProps}
           disabled={true}
-          backgroundColor="$backgroundHover"
+          backgroundColor={"#66F4FF"}
           opacity={1}
           placeholder="0"
         />
@@ -531,7 +531,7 @@ export default function ScoringEntryForm() {
               position="absolute"
               left="58%"
               fontSize="$2"
-              color="$blue10"
+              color="#FFC067"
               fontWeight="bold"
             >
               ×{multiplier}
@@ -567,8 +567,12 @@ export default function ScoringEntryForm() {
         >
           <YStack backgroundColor="$background" borderRadius="$2">
             {/* Header Row with Round and Player Selection */}
-            <XStack width="100%" position="relative">
-              <RoundScoresGridCell width="30%">
+            <XStack
+              width="100%"
+              position="relative"
+              backgroundColor={"#FFC067"}
+            >
+              <RoundScoresGridCell width="30%" backgroundColor={"#FFC067"}>
                 <SelectWrapper
                   value={formData.round.toString()}
                   onValueChange={(value) => handleInputChange("round", value)}
@@ -607,7 +611,11 @@ export default function ScoringEntryForm() {
               </RoundScoresGridCell>
 
               {/* Player Selector */}
-              <RoundScoresGridCell width="70%" borderLeftWidth={0}>
+              <RoundScoresGridCell
+                width="70%"
+                borderLeftWidth={0}
+                backgroundColor={"#FFC067"}
+              >
                 <SelectWrapper
                   value={formData.playerId}
                   onValueChange={(value) =>
@@ -650,13 +658,18 @@ export default function ScoringEntryForm() {
 
             {/* Band Type Row */}
             <XStack width="100%" position="relative">
-              <RoundScoresGridCell width="30%" borderTopWidth={0}>
+              <RoundScoresGridCell
+                width="30%"
+                borderTopWidth={0}
+                backgroundColor={"#66C4FF"}
+              >
                 Band Type
               </RoundScoresGridCell>
               <RoundScoresGridCell
                 width="70%"
                 borderLeftWidth={0}
                 borderTopWidth={0}
+                backgroundColor={"#66F4FF"}
               >
                 <SelectWrapper
                   value={formData.bandType}
@@ -701,13 +714,18 @@ export default function ScoringEntryForm() {
             {/* Scoring Categories */}
             {scoringCategories.map((category) => (
               <XStack key={category} width="100%" position="relative">
-                <RoundScoresGridCell width="30%" borderTopWidth={0}>
+                <RoundScoresGridCell
+                  width="30%"
+                  borderTopWidth={0}
+                  backgroundColor={"#66C4FF"}
+                >
                   {formatCategoryName(category)}
                 </RoundScoresGridCell>
                 <RoundScoresGridCell
                   width="70%"
                   borderLeftWidth={0}
                   borderTopWidth={0}
+                  backgroundColor={"#66F4FF"}
                 >
                   {renderInputField(category)}
                 </RoundScoresGridCell>
