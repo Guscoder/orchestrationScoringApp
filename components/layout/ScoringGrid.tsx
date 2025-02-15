@@ -127,6 +127,7 @@ export default function ScoringGrid() {
     <YStack
       flex={1}
       alignItems="center"
+      // alignSelf="flex-start"
       justifyContent="center"
       padding="$4"
       backgroundColor="$background"
@@ -142,8 +143,11 @@ export default function ScoringGrid() {
         >
           {/* Column Headers */}
           <XStack width="100%" flexDirection="row">
-            <RoundScoresGridCell width={nameColumnWidth}>
-              Player/Round Score
+            <RoundScoresGridCell
+              width={nameColumnWidth}
+              backgroundColor={"$primary"}
+            >
+              Player & Round Score
             </RoundScoresGridCell>
             <XStack flex={1} flexDirection="row">
               {activeRounds.map((roundNum) => (
@@ -152,7 +156,7 @@ export default function ScoringGrid() {
                   width={roundColumnWidth}
                   borderLeftWidth={0}
                 >
-                  {roundNum}
+                  <Text fontSize="$6">{roundNum}</Text>
                 </RoundScoresGridCell>
               ))}
             </XStack>
@@ -161,7 +165,11 @@ export default function ScoringGrid() {
           {/* Player Rows */}
           {players.map((player) => (
             <XStack key={player.id} width="100%" flexDirection="row">
-              <RoundScoresGridCell width={nameColumnWidth} borderTopWidth={0}>
+              <RoundScoresGridCell
+                width={nameColumnWidth}
+                borderTopWidth={0}
+                backgroundColor={"$primary"}
+              >
                 {player.name}
               </RoundScoresGridCell>
               <XStack flex={1} flexDirection="row">

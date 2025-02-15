@@ -44,6 +44,14 @@
     ],
     "experiments": {
       "typedRoutes": true
-    }
+    },
+    "fonts": [
+      {
+        "asset": "assets/fonts/Boogaloo-Regular.ttf"
+      },
+      {
+        "asset": "assets/fonts/SedgwickAve-Regular.ttf"
+      }
+    ]
   }
 }

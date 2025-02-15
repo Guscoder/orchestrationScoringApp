@@ -40,7 +40,7 @@ export default function TabTwoScreen() {
       keyboardShouldPersistTaps="handled"
     >
       <YStack padding="$4" alignItems="center" gap="$4">
-        <Text fontSize={20} color="$blue10">
+        <Text fontSize={28} color="$blue10">
           Orchestration
         </Text>
         {/* <AddPlayer /> */}

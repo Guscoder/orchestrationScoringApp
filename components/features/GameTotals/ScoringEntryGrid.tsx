@@ -29,7 +29,7 @@ const SubmitButtonSection = () => {
       <RoundScoresGridCell width="100%" borderTopWidth={0}>
         <XStack width="100%" justifyContent="center">
           <Form.Trigger asChild>
-            <Button backgroundColor="#66C4FF" color="white" size="$3">
+            <Button backgroundColor="$primary" color="$tertiary" size="$4">
               Submit Scores
             </Button>
           </Form.Trigger>
@@ -72,7 +72,7 @@ const SelectWrapper = ({
       <Select.Trigger width="100%" backgroundColor="transparent">
         <Select.Value
           placeholder={placeholder}
-          fontSize="$2"
+          fontSize="$4"
           width="100%"
           flex={1}
           textAlign="center"
@@ -268,7 +268,6 @@ export default function ScoringEntryForm() {
       value === "Fanfare for Common Man"
     ) {
       const audio = audioRefs.current[value.toLowerCase().replace(/ /g, "")];
-      console.log(value, value.toLowerCase().replace(/ /g, ""));
       if (audio) {
         audio.currentTime = 0; // Reset to start
         audio.play();
@@ -336,8 +335,8 @@ export default function ScoringEntryForm() {
       onChangeText: (value: string) => handleInputChange(category, value),
       textAlign: "center" as const,
       borderWidth: 0,
-      backgroundColor: "transparent",
-      fontSize: "$2",
+      backgroundColor: "$tertiary",
+      fontSize: "$4",
       height: "$3",
       width: "100%",
       focusStyle: {
@@ -351,7 +350,7 @@ export default function ScoringEntryForm() {
         <Input
           {...commonInputProps}
           disabled={true}
-          backgroundColor={"#66F4FF"}
+          backgroundColor={"$tertiary"}
           opacity={1}
           placeholder="0"
         />
@@ -373,7 +372,7 @@ export default function ScoringEntryForm() {
                   fontWeight="bold"
                   fontSize="$6"
                   textAlign="center"
-                  backgroundColor={"yellow"}
+                  backgroundColor={"$secondary"}
                 >
                   {`Size ${size} Venues`}
                 </Select.Label>
@@ -387,7 +386,11 @@ export default function ScoringEntryForm() {
                     e.stopPropagation();
                   }}
                 >
-                  <Select.ItemText textAlign="center" width="100%">
+                  <Select.ItemText
+                    textAlign="center"
+                    width="100%"
+                    fontSize={"$4"}
+                  >
                     {`${venue.name} (${venue.score} pts)`}
                   </Select.ItemText>
                 </Select.Item>
@@ -410,7 +413,7 @@ export default function ScoringEntryForm() {
                 fontWeight="bold"
                 fontSize="$6"
                 textAlign="center"
-                backgroundColor={"yellow"}
+                backgroundColor={"$secondary"}
               >
                 Band Bonuses
               </Select.Label>
@@ -424,7 +427,11 @@ export default function ScoringEntryForm() {
                   e.stopPropagation();
                 }}
               >
-                <Select.ItemText textAlign="center" width="100%">
+                <Select.ItemText
+                  textAlign="center"
+                  width="100%"
+                  fontSize={"$4"}
+                >
                   {bonus.label}
                 </Select.ItemText>
               </Select.Item>
@@ -448,7 +455,7 @@ export default function ScoringEntryForm() {
                   fontWeight="bold"
                   fontSize="$6"
                   textAlign="center"
-                  backgroundColor="yellow"
+                  backgroundColor="$secondary"
                 >
                   {`Size ${size} Music`}
                 </Select.Label>
@@ -464,7 +471,11 @@ export default function ScoringEntryForm() {
                     e.stopPropagation();
                   }}
                 >
-                  <Select.ItemText textAlign="center" width="100%">
+                  <Select.ItemText
+                    textAlign="center"
+                    width="100%"
+                    fontSize={"$4"}
+                  >
                     {`${music.name} (${music.score} pts)`}
                   </Select.ItemText>
                 </Select.Item>
@@ -506,13 +517,18 @@ export default function ScoringEntryForm() {
           justifyContent="center"
           position="relative"
         >
-          <Input {...commonInputProps} placeholder="0" maxWidth="50%" />
+          <Input
+            {...commonInputProps}
+            placeholder="0"
+            maxWidth="50%"
+            backgroundColor={"$tertiary"}
+          />
           {multiplier > 0 && (
             <Text
               position="absolute"
               left="58%"
-              fontSize="$2"
-              color="#FFC067"
+              fontSize="$4"
+              color="$quaternary"
               fontWeight="bold"
             >
               ×{multiplier}
@@ -544,14 +560,20 @@ export default function ScoringEntryForm() {
           // minWidth={"100vw"}
           gap="$4"
         >
-          <YStack backgroundColor="$background" borderRadius="$2">
+          <YStack backgroundColor="#d79922" borderRadius="$2">
             {/* Header Row with Round and Player Selection */}
             <XStack
               width="100%"
               position="relative"
-              backgroundColor={"#FFC067"}
+              backgroundColor={"$secondary"}
             >
-              <RoundScoresGridCell width="30%" backgroundColor={"#FFC067"}>
+              <RoundScoresGridCell
+                width="30%"
+                backgroundColor={"$secondary"}
+                borderColor={"$background"}
+                borderLeftColor={"$primary"}
+                borderTopColor={"$primary"}
+              >
                 <SelectWrapper
                   value={formData.round.toString()}
                   onValueChange={(value) => handleInputChange("round", value)}
@@ -567,7 +589,7 @@ export default function ScoringEntryForm() {
                         fontWeight="bold"
                         fontSize="$6"
                         textAlign="center"
-                        backgroundColor="yellow"
+                        backgroundColor="$secondary"
                       >
                         Game Rounds
                       </Select.Label>
@@ -580,7 +602,11 @@ export default function ScoringEntryForm() {
                           e.stopPropagation();
                         }}
                       >
-                        <Select.ItemText textAlign="center" width="100%">
+                        <Select.ItemText
+                          textAlign="center"
+                          width="100%"
+                          fontSize="$4"
+                        >
                           Round {round}
                         </Select.ItemText>
                       </Select.Item>
@@ -593,7 +619,7 @@ export default function ScoringEntryForm() {
               <RoundScoresGridCell
                 width="70%"
                 borderLeftWidth={0}
-                backgroundColor={"#FFC067"}
+                backgroundColor={"$secondary"}
               >
                 <SelectWrapper
                   value={formData.playerId}
@@ -612,7 +638,7 @@ export default function ScoringEntryForm() {
                         fontWeight="bold"
                         fontSize="$6"
                         textAlign="center"
-                        backgroundColor="yellow"
+                        backgroundColor="$secondary"
                       >
                         Players
                       </Select.Label>
@@ -625,7 +651,11 @@ export default function ScoringEntryForm() {
                           e.stopPropagation();
                         }}
                       >
-                        <Select.ItemText textAlign="center" width="100%">
+                        <Select.ItemText
+                          textAlign="center"
+                          width="100%"
+                          fontSize="$6"
+                        >
                           {player.name}
                         </Select.ItemText>
                       </Select.Item>
@@ -640,7 +670,8 @@ export default function ScoringEntryForm() {
               <RoundScoresGridCell
                 width="30%"
                 borderTopWidth={0}
-                backgroundColor={"#66C4FF"}
+                backgroundColor={"$primary"}
+                borderColor={"$background"}
               >
                 Band Type
               </RoundScoresGridCell>
@@ -648,7 +679,7 @@ export default function ScoringEntryForm() {
                 width="70%"
                 borderLeftWidth={0}
                 borderTopWidth={0}
-                backgroundColor={"#66F4FF"}
+                backgroundColor={"$tertiary"}
               >
                 <SelectWrapper
                   value={formData.bandType}
@@ -667,7 +698,7 @@ export default function ScoringEntryForm() {
                         fontWeight="bold"
                         fontSize="$6"
                         textAlign="center"
-                        backgroundColor="yellow"
+                        backgroundColor="$secondary"
                       >
                         Band Type
                       </Select.Label>
@@ -680,7 +711,11 @@ export default function ScoringEntryForm() {
                           e.stopPropagation();
                         }}
                       >
-                        <Select.ItemText textAlign="center" width="100%">
+                        <Select.ItemText
+                          textAlign="center"
+                          width="100%"
+                          fontSize="$6"
+                        >
                           {type}
                         </Select.ItemText>
                       </Select.Item>
@@ -696,7 +731,8 @@ export default function ScoringEntryForm() {
                 <RoundScoresGridCell
                   width="30%"
                   borderTopWidth={0}
-                  backgroundColor={"#66C4FF"}
+                  backgroundColor={"$primary"}
+                  borderColor={"$background"}
                 >
                   {formatCategoryName(category)}
                 </RoundScoresGridCell>
@@ -704,7 +740,8 @@ export default function ScoringEntryForm() {
                   width="70%"
                   borderLeftWidth={0}
                   borderTopWidth={0}
-                  backgroundColor={"#66F4FF"}
+                  backgroundColor={"$tertiary"}
+                  borderColor={"$primary"}
                 >
                   {renderInputField(category)}
                 </RoundScoresGridCell>
